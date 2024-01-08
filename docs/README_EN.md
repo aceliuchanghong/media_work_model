@@ -1,9 +1,7 @@
 # media_work_model
-
 my self working model everyday
 
 ### install
-
 #pip freeze > requirements.txt
 
 git clone git@github.com:aceliuchanghong/media_work_model.git
