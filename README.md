@@ -4,7 +4,8 @@ my self working model everyday
 
 ### install
 
-#pip freeze > requirements.txt
+#pip list --format=freeze > requirements.txt
+#distribute，pip，setuptools，wheel 需要删除
 
 git clone git@github.com:aceliuchanghong/media_work_model.git
 
