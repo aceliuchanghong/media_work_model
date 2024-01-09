@@ -33,6 +33,12 @@ conda activate worker
 
 pip install -r requirements.txt --proxy=127.0.0.1:10809
 
+npm config set proxy http://127.0.0.1:10809
+npm config set https-proxy http://127.0.0.1:10809
+### prompt
+这是我用爬虫爬取出来的json文件,你需要读取"html"里面内容,这段文字包含了一些 HTML 标签和 JavaScript 代码,直接忽略他,
+直接帮我总结该内容并做成一个 tiktok 短视频的视频脚本字幕文件,仅仅输出视频脚本(即剧本)且前面附带合适的srt时间戳的字幕文件
+
 ```
 创建一个引人入胜的投资者演示文稿需要清晰地展示你的业务模型、市场机会、技术优势、财务预测以及你的团队。以下是一个10页PPT的大纲，每一页的具体内容和目的：
 

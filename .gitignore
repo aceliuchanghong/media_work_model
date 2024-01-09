@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+user_crawler/*/
 # C extensions
 *.so
 test/testfiles/out/

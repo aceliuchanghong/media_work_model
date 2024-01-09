@@ -1,3 +1,5 @@
 # 基础配置
-proxy = True
+PROXY = False
+# DEBUG, INFO, WARNING, ERROR, CRITICAL
+LOG_LEVEL = "INFO"
 
