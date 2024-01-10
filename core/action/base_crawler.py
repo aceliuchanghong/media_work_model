@@ -1,5 +1,5 @@
 from abc import abstractmethod
-import requests
+import requests, re
 from core.worker import Worker
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
@@ -104,7 +104,7 @@ class BaseCrawler(Worker):
                 browser.close()
                 return None
 
-    def parse_html_content(self, html_content, exclude_selectors=None):
+    def parse_html_content2(self, html_content, exclude_selectors=None):
         """
         Parse the HTML content and extract main content as text.
         """
@@ -130,6 +130,70 @@ class BaseCrawler(Worker):
         # Combine text
         content = {'text': text}
         return content
+
+    def parse_html_content(self, html_content, exclude_selectors=None):
+        """
+        Parse the HTML content and extract main content as text and images.
+        """
+        if exclude_selectors is None:
+            exclude_selectors = ['script', 'style', 'header', 'footer', 'nav', 'aside', 'toolbarBox']
+
+        # Use BeautifulSoup to parse HTML
+        soup = BeautifulSoup(html_content, 'html.parser')
+
+        # Remove unwanted tags
+        for selector in exclude_selectors:
+            for element in soup.select(selector):
+                element.extract()
+
+        # Extract text
+        text = soup.get_text()
+
+        # Clean text
+        lines = (line.strip() for line in text.splitlines())
+        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+        text = '\n'.join(chunk for chunk in chunks if chunk)
+
+        # Extract images
+        images = self.extract_images(soup)
+
+        # Combine text and images
+        content = {'text': text, 'images': images}
+        return content
+
+    def extract_images(self, soup):
+        """
+        Extract images from the BeautifulSoup object, applying heuristic filters.
+        """
+        images = []
+        for img in soup.find_all('img'):
+            src = img.get('src')
+            alt = img.get('alt', '')
+
+            # Apply heuristic filters
+            if src and self.is_relevant_image(src, alt, img):
+                images.append(src)
+
+        return images
+
+    def is_relevant_image(self, src, alt, img):
+        """
+        Heuristic to determine if an image is relevant to the content.
+        """
+        # Check if the image source contains certain keywords
+        if re.search(r'/content/|/uploads/|/media/', src):
+            return True
+
+        # Check if the alt text is sufficiently descriptive
+        if len(alt) > 10:  # arbitrary length threshold
+            return True
+
+        # Check if the image is within certain HTML tags that likely contain main content
+        for parent in img.parents:
+            if parent.name in ['article', 'main', 'section']:
+                return True
+
+        return False
 
     def _get(self, url):
         content = self.fetch_html_content(url)
