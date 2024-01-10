@@ -1,14 +1,18 @@
 from abc import abstractmethod
-import requests, re
-from core.worker import Worker
-from playwright.sync_api import sync_playwright
+from functools import lru_cache
+import re
+import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
+from core.worker import Worker
 
 
 class BaseCrawler(Worker):
+
     def __init__(self, config):
         super().__init__(config)
         self.session = self._create_session()
+        self.content_regex = re.compile(r'/content/|/uploads/|/media/')
 
     def _create_session(self):
         """
@@ -161,27 +165,13 @@ class BaseCrawler(Worker):
         content = {'text': text, 'images': images}
         return content
 
-    def extract_images(self, soup):
-        """
-        Extract images from the BeautifulSoup object, applying heuristic filters.
-        """
-        images = []
-        for img in soup.find_all('img'):
-            src = img.get('src')
-            alt = img.get('alt', '')
-
-            # Apply heuristic filters
-            if src and self.is_relevant_image(src, alt, img):
-                images.append(src)
-
-        return images
-
+    @lru_cache(maxsize=1024)
     def is_relevant_image(self, src, alt, img):
         """
         Heuristic to determine if an image is relevant to the content.
         """
         # Check if the image source contains certain keywords
-        if re.search(r'/content/|/uploads/|/media/', src):
+        if self.content_regex.search(src):
             return True
 
         # Check if the alt text is sufficiently descriptive
@@ -194,6 +184,21 @@ class BaseCrawler(Worker):
                 return True
 
         return False
+
+    def extract_images(self, soup):
+        """
+        Extract images from the BeautifulSoup object, applying heuristic filters.
+        """
+        images = []
+        for img in soup.select('img[src]'):  # Only select img tags with src attribute
+            src = img['src']
+            alt = img.get('alt', '')
+
+            # Apply heuristic filters
+            if self.is_relevant_image(src, alt, img):
+                images.append(src)
+
+        return images
 
     def _get(self, url):
         content = self.fetch_html_content(url)
