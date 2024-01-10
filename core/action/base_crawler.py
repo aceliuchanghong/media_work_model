@@ -24,8 +24,8 @@ class BaseCrawler(Worker):
             session.proxies.update(self.config.PROXY)
         return session
 
-    def _get(self, url, content_selector='article, .post, .content, body',
-             exclude_selectors=None):
+    def _get2(self, url, content_selector='article, .post, .content, body',
+              exclude_selectors=None):
         """
         Use playwright to send GET requests and extract main content from the page.
         """
@@ -34,13 +34,14 @@ class BaseCrawler(Worker):
         with sync_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page()
-            page.goto(url)
+            page.goto(url, wait_until="domcontentloaded")
 
             try:
                 # Wait for the content selector to be available
                 page.wait_for_selector(content_selector, timeout=4000)
                 # Extract the HTML content
                 html_content = page.query_selector(content_selector).inner_html()
+                # print(html_content)
 
                 # Use BeautifulSoup to parse HTML
                 soup = BeautifulSoup(html_content, 'html.parser')
@@ -68,25 +69,76 @@ class BaseCrawler(Worker):
                 browser.close()
                 return None
 
+    def _post(self, url, data=None, json=None, **kwargs):
+        """
+        发送POST请求
+        """
+        try:
+            response = self.session.post(url, data=data, json=json, **kwargs)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.HTTPError as e:
+            self.logger.error(f"HTTPError occurred: {e}")
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"RequestException occurred: {e}")
+        return None
 
-def _post(self, url, data=None, json=None, **kwargs):
-    """
-    发送POST请求
-    """
-    try:
-        response = self.session.post(url, data=data, json=json, **kwargs)
-        response.raise_for_status()
-        return response
-    except requests.exceptions.HTTPError as e:
-        self.logger.error(f"HTTPError occurred: {e}")
-    except requests.exceptions.RequestException as e:
-        self.logger.error(f"RequestException occurred: {e}")
-    return None
+    def fetch_html_content(self, url, content_selector='article, .post, .content, body'):
+        """
+        Use playwright to send GET requests and return the HTML content of the page.
+        """
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page()
+            page.goto(url, wait_until="domcontentloaded")
 
+            try:
+                # Wait for the content selector to be available
+                page.wait_for_selector(content_selector, timeout=4000)
+                # Extract the HTML content
+                html_content = page.query_selector(content_selector).inner_html()
+                browser.close()
+                return html_content
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                browser.close()
+                return None
 
-@abstractmethod
-def work(self, *args, **kwargs):
-    """
-    执行爬取任务。这个方法应该被所有爬虫子类实现。
-    """
-    pass
+    def parse_html_content(self, html_content, exclude_selectors=None):
+        """
+        Parse the HTML content and extract main content as text.
+        """
+        if exclude_selectors is None:
+            exclude_selectors = ['script', 'style', 'header', 'footer', 'nav', 'aside', 'toolbarBox']
+
+        # Use BeautifulSoup to parse HTML
+        soup = BeautifulSoup(html_content, 'html.parser')
+
+        # Remove unwanted tags
+        for selector in exclude_selectors:
+            for element in soup.select(selector):
+                element.extract()
+
+        # Get text
+        text = soup.get_text()
+
+        # Clean text
+        lines = (line.strip() for line in text.splitlines())
+        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+        text = '\n'.join(chunk for chunk in chunks if chunk)
+
+        # Combine text
+        content = {'text': text}
+        return content
+
+    def _get(self, url):
+        content = self.fetch_html_content(url)
+        ans = self.parse_html_content(content)
+        return ans
+
+    @abstractmethod
+    def work(self, *args, **kwargs):
+        """
+        执行爬取任务。这个方法应该被所有爬虫子类实现。
+        """
+        pass
