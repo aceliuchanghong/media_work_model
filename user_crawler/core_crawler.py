@@ -42,6 +42,8 @@ class Crawler(BaseCrawler):
 
 if __name__ == '__main__':
     cl = Crawler(config)
-    cl.work('https://mp.weixin.qq.com/s/7m3lVegUOigG1Uy904GmaA', 'liu')
-    cl.work('https://www.sohu.com/a/744144846_121687421', 'liu')
-    cl.work('https://www.xiaohongshu.com/explore/658259920000000005038be1', 'liu')
+    # cl.work('https://mp.weixin.qq.com/s/7m3lVegUOigG1Uy904GmaA', 'liu')
+    # cl.work('https://www.sohu.com/a/744144846_121687421', 'liu')
+    # cl.work('https://www.xiaohongshu.com/explore/658259920000000005038be1', 'liu')
+    cl.work('https://www.aiexplorer.blog/article/autogpt', 'liu')
+    cl.work('https://www.zhihu.com/question/638641243/answer/3356191268','liu')
