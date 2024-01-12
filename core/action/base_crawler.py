@@ -91,22 +91,33 @@ class BaseCrawler(Worker):
         """
         Use playwright to send GET requests and return the HTML content of the page.
         """
+        user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
         with sync_playwright() as p:
             browser = p.chromium.launch()
-            page = browser.new_page()
-            page.goto(url, wait_until="domcontentloaded")
+            # Create a new browser context with the specified user agent
+            context = browser.new_context(user_agent=user_agent)
 
+            page = context.new_page()
             try:
-                # Wait for the content selector to be available
-                page.wait_for_selector(content_selector, timeout=4000)
-                # Extract the HTML content
-                html_content = page.query_selector(content_selector).inner_html()
-                browser.close()
-                return html_content
+                response = page.goto(url, wait_until="domcontentloaded")
+                # Check if the page was loaded successfully
+                if response.ok:
+                    # Wait for the content selector to be available
+                    page.wait_for_selector(content_selector, timeout=4000)
+                    # Extract the HTML content
+                    html_content = page.query_selector(content_selector).inner_html()
+                    return html_content
+                else:
+                    print(f"Page load failed with status: {response.status}")
+                    return None
             except Exception as e:
                 print(f"Error occurred: {e}")
+                return 'None'
+            finally:
+                # Ensure the browser is closed even if an error occurs
+                context.close()
                 browser.close()
-                return None
 
     def parse_html_content2(self, html_content, exclude_selectors=None):
         """
