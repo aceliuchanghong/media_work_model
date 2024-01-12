@@ -214,7 +214,7 @@ class BaseCrawler(Worker):
     def _get(self, url):
         content = self.fetch_html_content(url)
         ans = self.parse_html_content(content)
-        return ans
+        return content, ans
 
     @abstractmethod
     def work(self, *args, **kwargs):

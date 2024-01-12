@@ -19,7 +19,7 @@ class Crawler(BaseCrawler):
         爬取对于url,获取数据文件保存到{user}目录下存为{user}_output.txt
         """
         # 获取数据
-        response = self._get(url)
+        content, response = self._get(url)
         if response is None:
             self.logger.error(f"Failed to get data from {url}")
             return
@@ -30,14 +30,20 @@ class Crawler(BaseCrawler):
 
         # 保存数据到文件
         output_file = os.path.join(user_dir, f"{user}_output.txt")
-        output2_file = os.path.join(user_dir, f"{user}_output2.txt")
+        output2_file = os.path.join(user_dir, f"{user}_output_img.txt")
+        output3_file = os.path.join(user_dir, f"{user}_output_html.txt")
         with open(output_file, 'w', encoding='utf-8') as file:
             json.dump(response.get("text"), file, indent=4, ensure_ascii=False)
         with open(output2_file, 'w', encoding='utf-8') as file2:
             json.dump(response.get("images"), file2, indent=4, ensure_ascii=False)
+        with open(output3_file, 'w', encoding='utf-8') as file3:
+            json.dump(content, file3, indent=4, ensure_ascii=False)
 
         self.logger.info(f"Data successfully saved to {output_file}")
         self.logger.info(f"Data successfully saved to {output2_file}")
+        self.logger.info(f"Data successfully saved to {output3_file}")
+
+        return output_file, output3_file
 
 
 if __name__ == '__main__':
@@ -46,4 +52,4 @@ if __name__ == '__main__':
     # cl.work('https://www.sohu.com/a/744144846_121687421', 'liu')
     # cl.work('https://www.xiaohongshu.com/explore/658259920000000005038be1', 'liu')
     cl.work('https://www.aiexplorer.blog/article/autogpt', 'liu')
-    cl.work('https://www.zhihu.com/question/638641243/answer/3356191268','liu')
+    cl.work('https://www.zhihu.com/question/638641243/answer/3356191268', 'liu')
