@@ -31,7 +31,7 @@ class Crawler(BaseCrawler):
         # 保存数据到文件
         output_file = os.path.join(user_dir, f"{user}_output.txt")
         output2_file = os.path.join(user_dir, f"{user}_output_img.txt")
-        output3_file = os.path.join(user_dir, f"{user}_output_html.txt")
+        output3_file = os.path.join(user_dir, f"{user}_output.html")
         with open(output_file, 'w', encoding='utf-8') as file:
             json.dump(response.get("text"), file, indent=4, ensure_ascii=False)
         with open(output2_file, 'w', encoding='utf-8') as file2:
@@ -48,8 +48,8 @@ class Crawler(BaseCrawler):
 
 if __name__ == '__main__':
     cl = Crawler(config)
-    # cl.work('https://mp.weixin.qq.com/s/7m3lVegUOigG1Uy904GmaA', 'liu')
-    # cl.work('https://www.sohu.com/a/744144846_121687421', 'liu')
-    # cl.work('https://www.xiaohongshu.com/explore/658259920000000005038be1', 'liu')
+    cl.work('https://mp.weixin.qq.com/s/7m3lVegUOigG1Uy904GmaA', 'liu')
+    cl.work('https://www.sohu.com/a/744144846_121687421', 'liu')
+    cl.work('https://www.xiaohongshu.com/explore/658259920000000005038be1', 'liu')
     cl.work('https://www.aiexplorer.blog/article/autogpt', 'liu')
     cl.work('https://www.zhihu.com/question/638641243/answer/3356191268', 'liu')

@@ -5,7 +5,7 @@
 eg:比如,他输入一个明星八卦的网址
 
 启动一个task_demo:
-1.接受网址参数,爬取对应网页文字(A.txt)和图片(imgs)==>自己写爬虫实现
+1.接受网址参数,爬取对应网页文字(A.txt)和图片(imgs)==>WebBaseLoader
 2.(A.txt)文字转剧本(A.script)和字幕文件(A.srt)==>chatglm3实现
 3.(A.srt)文字转语音(A.mp3)==>openvoice实现
 4.图片(imgs)配合语音(A.mp3)生成视频(A.mp4)==>ffmpeg自己写代码实现
